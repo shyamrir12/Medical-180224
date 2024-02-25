@@ -1,9 +1,54 @@
 ﻿@page "/"
-
+@using Medical.Data.EncryptDecryptServices;
+@inject IEncryptDecrypt _crypto
+@inject NavigationManager _navigationManager
 <PageTitle>Index</PageTitle>
 
 <h1>Hello, world!</h1>
 
 Welcome to your new app.
+<p>@param1</p>
+<p>@param2</p>
 
+<p>@dparam1</p>
+<p>@dparam2</p>
 <SurveyPrompt Title="How is Blazor working for you?" />
+
+@code {
+    string param1 = "";
+    string param2 = "";
+
+    string dparam1 = "";
+    string dparam2 = "";
+ 
+    protected override async Task OnInitializedAsync()
+    {
+        // Get the query parameters from the URL
+        var uri = _navigationManager.ToAbsoluteUri(_navigationManager.Uri);
+        var queryString = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
+
+        // Access the parameters
+        if (queryString.ContainsKey("param1"))
+        {
+            param1 = queryString["param1"];
+            dparam1 = await _crypto.Decrypt(param1);
+
+            // Use param1...
+        }
+
+        if (queryString.ContainsKey("param2"))
+        {
+            param2 = queryString["param2"];
+            dparam2 = await _crypto.Decrypt(param2);
+            // Use param2...
+        }
+        if(param1=="")
+        {
+            string medicalurl = "http://localhost:5080/";
+            string url = _navigationManager.ToAbsoluteUri(medicalurl).ToString();
+            _navigationManager.NavigateTo(url);
+        }
+
+        StateHasChanged();
+    }
+}
